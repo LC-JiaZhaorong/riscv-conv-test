@@ -1,0 +1,45 @@
+    .text
+    .balign 4
+    .global vec_mul
+# void
+# vec_mul(size_t n, char *x, char *y, short *z, int *param)
+# {
+#   size_t i;
+#   for (i=0; i<n; i++)
+#     z[i] +=  x[i] * y[i];
+# }
+#
+# register arguments:
+#     a0      n
+#     a1      x
+#     a2      y
+#     a3      z
+#     a4      param
+
+vec_mul:
+    vsetvli t0, a0, e16, m8
+    csrr t1, vlenb
+    csrr t2, vl
+    sb t2,0(a4) 
+    sub a0, a0, t0
+#buff a3 address
+	mv a5, a3
+# load x 
+    vle16.v v0, (a1)
+    add a1, a1, t0
+# load y 
+    vle16.v v8, (a2)
+    add a2, a2, t0
+# load z 
+	vle16.v v16, (a3)
+    slli t0, t0, 1
+	add a3, a3, t0
+# z=z+x*y    
+	vmacc.vv v16, v8, v0
+# store z
+	mv a3, a5
+    vse16.v v16, (a3)
+    bnez a0, vec_mul
+    
+    ret
+
